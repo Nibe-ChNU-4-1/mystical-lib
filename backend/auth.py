@@ -1,4 +1,4 @@
-from flask import Blueprint, request, redirect, render_template, url_for
+from flask import Blueprint, request, redirect, render_template, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import get_user, add_user
 
@@ -11,8 +11,11 @@ def login():
         password = request.form['password']
         user = get_user(username)
         if user and check_password_hash(user['password'], password):
-            role = user['role']
-            if role == 'admin':
+            session['user'] = {
+                'username': user['username'],
+                'role': user['role']
+            }
+            if user['role'] == 'admin':
                 return redirect(url_for('homepages.admin_home'))
             else:
                 return redirect(url_for('homepages.user_home'))
@@ -28,3 +31,8 @@ def register():
         add_user(username, generate_password_hash(password), role)
         return redirect(url_for('auth.login'))
     return render_template('register.html')
+
+@auth_bp.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect(url_for('auth.login'))
