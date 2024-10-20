@@ -7,9 +7,29 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <header>
-        <h1>Welcome Admin!</h1>
-    </header>
+<header>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="#">Catalog</a></li>
+        </ul>
+        <ul>
+            {% if 'user' in session %}
+                {% if session['user']['role'] == 'admin' %}
+                    <li><a href="{{ url_for('homepages.admin_home') }}">{{ session['user']['username'] }}</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('homepages.user_home') }}">{{ session['user']['username'] }}</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+            {% else %}
+                <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                <li><a href="{{ url_for('auth.register') }}">Account</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    <h1>Welcome to Artifact Library System</h1>
+    <p>Efficient Management of Books, Scrolls, and Artifacts</p>
+</header>
     <main>
         <p>You have admin privileges. Manage your library effectively!</p>
     </main>
