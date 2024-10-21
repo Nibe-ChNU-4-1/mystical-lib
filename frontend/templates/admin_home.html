@@ -27,24 +27,32 @@
             {% endif %}
         </ul>
     </nav>
-    <h1>Manage Relics</h1>
+    <h1>Welcome to Artifact Library System (Admin)</h1>
 </header>
+
 <main>
-    <h2>Relics List</h2>
+    <h2>Create New Relic</h2>
+    <form method="POST" action="{{ url_for('relics.create_relic') }}">
+        <label for="name">Relic Name:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required></textarea>
+
+        <button type="submit">Add Relic</button>
+    </form>
+
+    <hr>
+
+    <h2>Edit Existing Relics</h2>
+    <!-- Список реліквій для редагування, якщо такі є -->
     <ul>
         {% for relic in relics %}
-            <li>
-                <strong>{{ relic.name }}</strong> - {{ relic.description }}
-                <br>
-                Available: {{ relic.available }}
-                <br>
-                Owner: {{ relic.owner or 'None' }}
-                <br>
-                <a href="{{ url_for('homepages.edit_relic', relic_id=relic._id) }}">Edit</a>
-            </li>
+        <li>{{ relic.name }} - <a href="{{ url_for('homepages.edit_relic', relic_id=relic['_id']) }}">Edit</a></li>
         {% endfor %}
     </ul>
 </main>
+
 <footer>
     <p>Email: yevynchuk.denys@chnu.edu.ua</p>
     <p>Phone: +38 012 345 6789</p>

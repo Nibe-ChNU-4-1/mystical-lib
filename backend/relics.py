@@ -6,17 +6,22 @@ import requests
 relics_bp = Blueprint('relics', __name__)
 
 # Створити нову реліквію
-@relics_bp.route('/relics', methods=['POST'])
+@relics_bp.route('/relics/create', methods=['POST'])
 def create_relic():
-    data = request.get_json()
-    relic = {
+    if 'user' not in session or session['user']['role'] != 'admin':
+        return redirect(url_for('auth.login'))
+
+    data = request.form
+    new_relic = {
         'name': data['name'],
         'description': data['description'],
-        'available': data['available'],
-        'owner': data['owner']
+        'available': True,  # За замовчуванням доступна
+        'owner': 'archive'  # За замовчуванням власник — архів
     }
-    relics_collection.insert_one(relic)
-    return jsonify({'message': 'Relic created successfully'}), 201
+
+    relics_collection.insert_one(new_relic)
+    flash('New relic successfully created!')
+    return redirect(url_for('homepages.admin_home'))
 
 # Отримати всі реліквії
 @relics_bp.route('/relics', methods=['GET'])
@@ -36,19 +41,25 @@ def get_relic(relic_id):
     return jsonify({'error': 'Relic not found'}), 404
 
 # Оновити реліквію
-@relics_bp.route('/relics/<relic_id>', methods=['PUT'])
+@relics_bp.route('/relics/update/<relic_id>', methods=['POST'])
 def update_relic(relic_id):
-    data = request.get_json()
-    updated_relic = {
-        'name': data['name'],
-        'description': data['description'],
-        'available': data['available'],
-        'owner': data['owner']
-    }
-    result = relics_collection.update_one({'_id': ObjectId(relic_id)}, {'$set': updated_relic})
-    if result.modified_count > 0:
-        return jsonify({'message': 'Relic updated successfully'}), 200
-    return jsonify({'error': 'Relic not found'}), 404
+    if 'user' not in session or session['user']['role'] != 'admin':
+        return redirect(url_for('auth.login'))
+
+    relic = relics_collection.find_one({"_id": ObjectId(relic_id)})
+    if relic:
+        updated_data = {
+            'name': request.form['name'],
+            'description': request.form['description'],
+            'available': 'available' in request.form  # Оновлення доступності
+        }
+        relics_collection.update_one({"_id": ObjectId(relic_id)}, {"$set": updated_data})
+        flash("Relic updated successfully!")
+        return redirect(url_for('homepages.admin_home'))
+    else:
+        flash("Relic not found!")
+        return redirect(url_for('homepages.admin_home'))
+
 
 # Видалити реліквію
 @relics_bp.route('/relics/<relic_id>/delete', methods=['POST'])
