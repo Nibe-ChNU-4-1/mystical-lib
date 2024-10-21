@@ -1,6 +1,7 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session, redirect, url_for
 from database import relics_collection
 from bson.objectid import ObjectId
+import requests
 
 relics_bp = Blueprint('relics', __name__)
 
@@ -22,7 +23,7 @@ def create_relic():
 def get_relics():
     relics = list(relics_collection.find())
     for relic in relics:
-        relic['_id'] = str(relic['_id'])  # Конвертувати ObjectId в string для JSON
+        relic['_id'] = str(relic['_id'])
     return jsonify(relics), 200
 
 # Отримати одну реліквію
@@ -56,3 +57,23 @@ def delete_relic(relic_id):
     if result.deleted_count > 0:
         return jsonify({'message': 'Relic deleted successfully'}), 200
     return jsonify({'error': 'Relic not found'}), 404
+
+# Взяти реліквію
+@relics_bp.route('/relics/take/<relic_id>', methods=['POST'])
+def take_relic(relic_id):
+    if 'user' not in session:
+        # Якщо користувач не авторизований, перенаправити його на сторінку логіну
+        return redirect(url_for('auth.login'))
+
+    # Знайти реліквію
+    relic = relics_collection.find_one({'_id': ObjectId(relic_id)})
+    if not relic:
+        return jsonify({'error': 'Relic not found'}), 404
+
+    # Оновити власника та змінити статус на недоступний
+    relics_collection.update_one(
+        {'_id': ObjectId(relic_id)},
+        {'$set': {'available': False, 'owner': session['user']['username']}}
+    )
+
+    return redirect(url_for('homepages.catalog'))  # Повернутись на сторінку каталогу

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalog</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('homepages.catalog') }}">Catalog</a></li>
+            </ul>
+            <ul>
+                {% if 'user' in session %}
+                    {% if session['user']['role'] == 'admin' %}
+                        <li><a href="{{ url_for('homepages.admin_home') }}">{{ session['user']['username'] }}</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('homepages.user_home') }}">{{ session['user']['username'] }}</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                    <li><a href="{{ url_for('auth.register') }}">Account</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        <h1>Artifact Catalog</h1>
+    </header>
+
+    <main>
+        <section>
+            <h2>Catalog of Relics</h2>
+            <ul>
+                {% for relic in relics %}
+                    <li>
+                        <h3>{{ relic['name'] }}</h3>
+                        <p><strong>Description:</strong> {{ relic['description'] }}</p>
+                        <p><strong>Available:</strong> {{ 'Yes' if relic['available'] else 'No' }}</p>
+                        <p><strong>Owner:</strong> {{ relic['owner'] if relic['owner'] else 'Archive' }}</p>
+
+                        {% if relic['available'] %}
+                            {% if 'user' in session %}
+                                <!-- Кнопка взяти реліквію, якщо користувач авторизований -->
+                                <form action="{{ url_for('relics.take_relic', relic_id=relic['_id']) }}" method="POST">
+                                    <button type="submit">Take Relic</button>
+                                </form>
+                            {% else %}
+                                <!-- Якщо користувач не авторизований, запропонувати увійти -->
+                                <p>Please <a href="{{ url_for('auth.login') }}">log in</a> to take this relic.</p>
+                            {% endif %}
+                        {% else %}
+                            <!-- Якщо реліквія зайнята -->
+                            <p>This relic is already taken by {{ relic['owner'] }}.</p>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>Email: yevynchuk.denys@chnu.edu.ua</p>
+        <p>Phone: +38 012 345 6789</p>
+    </footer>
+</body>
+</html>
