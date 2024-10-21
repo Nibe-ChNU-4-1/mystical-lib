@@ -15,28 +15,35 @@
         </ul>
         <ul>
             {% if 'user' in session %}
-                {% if session['user']['role'] == 'admin' %}
-                    <li><a href="{{ url_for('homepages.admin_home') }}">{{ session['user']['username'] }}</a></li>
-                {% else %}
-                    <li><a href="{{ url_for('homepages.user_home') }}">{{ session['user']['username'] }}</a></li>
-                {% endif %}
+                <li>{{ session['user']['username'] }}</li>
                 <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
             {% else %}
                 <li><a href="{{ url_for('auth.login') }}">Login</a></li>
-                <li><a href="{{ url_for('auth.register') }}">Account</a></li>
             {% endif %}
         </ul>
     </nav>
-    <h1>Welcome to Artifact Library System</h1>
-    <p>Efficient Management of Books, Scrolls, and Artifacts</p>
+    <h1>Your Relics</h1>
 </header>
-    <main>
-        <p>You can browse and manage your borrowed items here.</p>
-    </main>
-    <footer>
-        <p>Email: yevynchuk.denys@chnu.edu.ua</p>
-        <p>Phone: +38 012 345 6789</p>
-    </footer>
+<main>
+    <p>You can browse and manage your borrowed items here.</p>
+    {% if user_relics %}
+        <ul>
+            {% for relic in user_relics %}
+                <li>
+                    <strong>{{ relic.name }}</strong> - {{ relic.description }}
+                    <form action="{{ url_for('relics.return_relic', relic_id=relic._id) }}" method="POST">
+                        <button type="submit">Return</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have no borrowed relics.</p>
+    {% endif %}
+</main>
+<footer>
+    <p>Email: yevynchuk.denys@chnu.edu.ua</p>
+    <p>Phone: +38 012 345 6789</p>
+</footer>
 </body>
 </html>
-

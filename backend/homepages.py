@@ -13,7 +13,9 @@ def admin_home():
 @homepages_bp.route('/user')
 def user_home():
     if 'user' in session and session['user']['role'] == 'user':
-        return render_template('user_home.html')
+        user_relics = relics_collection.find({'owner': session['user']['username']})
+        user_relics = list(user_relics)
+        return render_template('user_home.html', user_relics=user_relics)
     return redirect(url_for('auth.login'))
 
 @homepages_bp.route('/catalog')

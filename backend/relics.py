@@ -62,18 +62,32 @@ def delete_relic(relic_id):
 @relics_bp.route('/relics/take/<relic_id>', methods=['POST'])
 def take_relic(relic_id):
     if 'user' not in session:
-        # Якщо користувач не авторизований, перенаправити його на сторінку логіну
         return redirect(url_for('auth.login'))
 
-    # Знайти реліквію
     relic = relics_collection.find_one({'_id': ObjectId(relic_id)})
     if not relic:
         return jsonify({'error': 'Relic not found'}), 404
 
-    # Оновити власника та змінити статус на недоступний
     relics_collection.update_one(
         {'_id': ObjectId(relic_id)},
         {'$set': {'available': False, 'owner': session['user']['username']}}
     )
 
-    return redirect(url_for('homepages.catalog'))  # Повернутись на сторінку каталогу
+    return redirect(url_for('homepages.catalog'))
+
+
+@relics_bp.route('/relics/<relic_id>/return', methods=['POST'])
+def return_relic(relic_id):
+    user = session.get('user')
+    if not user:
+        return redirect(url_for('auth.login'))
+
+    relic = relics_collection.find_one({'_id': ObjectId(relic_id), 'owner': user['username']})
+
+    if relic:
+        relics_collection.update_one(
+            {'_id': ObjectId(relic_id)},
+            {'$set': {'available': True, 'owner': None}}
+        )
+        return redirect(url_for('homepages.user_home'))
+    return jsonify({'error': 'Relic not found or not owned by user'}), 404
