@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session, redirect, url_for
+from flask import Blueprint, request, jsonify, session, redirect, url_for, flash
 from database import relics_collection
 from bson.objectid import ObjectId
 import requests
@@ -51,12 +51,19 @@ def update_relic(relic_id):
     return jsonify({'error': 'Relic not found'}), 404
 
 # Видалити реліквію
-@relics_bp.route('/relics/<relic_id>', methods=['DELETE'])
+@relics_bp.route('/relics/<relic_id>/delete', methods=['POST'])
 def delete_relic(relic_id):
+    if 'user' not in session or session['user']['role'] != 'admin':
+        return redirect(url_for('auth.login'))
+
     result = relics_collection.delete_one({'_id': ObjectId(relic_id)})
+
     if result.deleted_count > 0:
-        return jsonify({'message': 'Relic deleted successfully'}), 200
-    return jsonify({'error': 'Relic not found'}), 404
+        flash('Relic successfully deleted.')
+    else:
+        flash('Error: Relic not found or could not be deleted.')
+
+    return redirect(url_for('homepages.admin_home'))
 
 # Взяти реліквію
 @relics_bp.route('/relics/take/<relic_id>', methods=['POST'])
@@ -87,7 +94,7 @@ def return_relic(relic_id):
     if relic:
         relics_collection.update_one(
             {'_id': ObjectId(relic_id)},
-            {'$set': {'available': True, 'owner': None}}
+            {'$set': {'available': True, 'owner': "Archive"}}
         )
         return redirect(url_for('homepages.user_home'))
     return jsonify({'error': 'Relic not found or not owned by user'}), 404

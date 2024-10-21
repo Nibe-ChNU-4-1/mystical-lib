@@ -13,26 +13,42 @@
             <li><a href="{{ url_for('home') }}">Home</a></li>
             <li><a href="{{ url_for('homepages.catalog') }}">Catalog</a></li>
         </ul>
+        <ul>
+            {% if 'user' in session %}
+                {% if session['user']['role'] == 'admin' %}
+                    <li><a href="{{ url_for('homepages.admin_home') }}">{{ session['user']['username'] }}</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('homepages.user_home') }}">{{ session['user']['username'] }}</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+            {% else %}
+                <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                <li><a href="{{ url_for('auth.register') }}">Account</a></li>
+            {% endif %}
+        </ul>
     </nav>
-    <h1>Edit Relic: {{ relic.name }}</h1>
+    <h1>Edit Relic</h1>
 </header>
+
 <main>
-    <form method="POST">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" value="{{ relic.name }}" required><br>
+    <form method="POST" action="{{ url_for('relics.update_relic', relic_id=relic['_id']) }}">
+        <label for="name">Relic Name:</label>
+        <input type="text" id="name" name="name" value="{{ relic['name'] }}" required>
 
         <label for="description">Description:</label>
-        <textarea id="description" name="description" required>{{ relic.description }}</textarea><br>
+        <textarea id="description" name="description" required>{{ relic['description'] }}</textarea>
 
-        <label for="available">Available:</label>
-        <input type="checkbox" id="available" name="available" {% if relic.available %}checked{% endif %}><br>
+        <label for="available">Is Available:</label>
+        <input type="checkbox" id="available" name="available" {% if relic['available'] %}checked{% endif %}>
 
-        <label for="owner">Owner:</label>
-        <input type="text" id="owner" name="owner" value="{{ relic.owner or '' }}"><br>
+        <button type="submit">Update</button>
+    </form>
 
-        <button type="submit">Save Changes</button>
+    <form method="POST" action="{{ url_for('relics.delete_relic', relic_id=relic['_id']) }}">
+        <button type="submit" style="background-color: red;">Delete</button>
     </form>
 </main>
+
 <footer>
     <p>Email: yevynchuk.denys@chnu.edu.ua</p>
     <p>Phone: +38 012 345 6789</p>
