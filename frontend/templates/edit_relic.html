@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Relic</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('homepages.catalog') }}">Catalog</a></li>
+        </ul>
+    </nav>
+    <h1>Edit Relic: {{ relic.name }}</h1>
+</header>
+<main>
+    <form method="POST">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" value="{{ relic.name }}" required><br>
+
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" required>{{ relic.description }}</textarea><br>
+
+        <label for="available">Available:</label>
+        <input type="checkbox" id="available" name="available" {% if relic.available %}checked{% endif %}><br>
+
+        <label for="owner">Owner:</label>
+        <input type="text" id="owner" name="owner" value="{{ relic.owner or '' }}"><br>
+
+        <button type="submit">Save Changes</button>
+    </form>
+</main>
+<footer>
+    <p>Email: yevynchuk.denys@chnu.edu.ua</p>
+    <p>Phone: +38 012 345 6789</p>
+</footer>
+</body>
+</html>
